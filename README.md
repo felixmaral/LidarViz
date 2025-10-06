@@ -1,4 +1,4 @@
-# Lidar-Visualizer
+# LidarViz
 
 This project provides a LiDAR Visualization tool for `.ply`, `.bin` files and data `samples` from __Carla Simulator__.
 

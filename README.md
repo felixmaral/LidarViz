@@ -4,8 +4,6 @@ This project provides a LiDAR Visualization tool for `.ply`, `.bin` files and da
 
 ## Clone the repository
 
-### Run the following command to download only the `Lidar-Visualizer` folder:
-
    ```bash
    git clone https://github.com/felixmaral/LidarViz.git
    ```

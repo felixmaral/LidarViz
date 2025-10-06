@@ -13,18 +13,30 @@ from matplotlib import colormaps as cm
 import sys
 import math
 import pygame
-
 import os
-# Obtenemos la ruta absoluta de la carpeta que contiene este mismo archivo (carla_viz.py)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Añadimos esa carpeta a la lista de rutas donde Python busca módulos
-if current_dir not in sys.path:
-    sys.path.append(current_dir)
-
-## Importaciones necesarias para cargar la arquitectura del modelo eltrenado
 import torch
-from pointnet2_model import PointNet2SemSeg
+from pathlib import Path  # Usar pathlib, es más moderno
+
+# --- 1. CONFIGURAR RUTAS DEL PROYECTO DE FORMA ROBUSTA ---
+
+# Asumimos que este script está en la raíz del proyecto.
+# Si estuviera en una subcarpeta (ej: 'src/'), usarías .parent.parent
+try:
+    # Path(__file__) es la ruta a este script. .resolve() la hace absoluta. .parent es la carpeta que lo contiene.
+    PROJECT_ROOT = Path(__file__).resolve().parent
+except NameError:
+    # Alternativa para entornos como Jupyter notebooks
+    PROJECT_ROOT = Path(os.getcwd())
+
+# Añadimos la raíz del proyecto al path de Python.
+# Ahora Python podrá encontrar el paquete 'segmentation'.
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.append(str(PROJECT_ROOT))
+
+# --- 2. IMPORTAR LA ARQUITECTURA DEL MODELO ---
+
+# Esta importación ahora funcionará correctamente gracias al paso anterior
+from segmentation.architectures.pointnet2_model import PointNet2SemSeg
 
 
 # --- Configuración Visual y Global ---
@@ -226,9 +238,17 @@ def main(lidar_range, channels, points_per_second):
     client.set_timeout(10.0)
     world = client.get_world()
     
-    ## Cargar el modelo
-    # Asegúrate de que esta ruta sea correcta dentro de tu contenedor Docker si es necesario
-    model_path = "/home/carla/2024-tfg-felix-martinez/segmentation/deep_learning/results/pointnet++_no_rem_v0/pointnet2_no_remission_v1.pth"
+    # --- 3. CONSTRUIR LA RUTA A LOS PESOS DEL MODELO ---
+    
+    # Ya no usamos una ruta absoluta. La construimos a partir de la raíz del proyecto.
+    # El operador '/' de pathlib une las rutas de forma segura en cualquier sistema operativo.
+    weights_relative_path = "segmentation/models/pointnet2_no_remission_v1.pth"
+    model_path = PROJECT_ROOT / weights_relative_path
+
+    # Imprimimos la ruta para verificar que es correcta
+    print(f"Buscando el modelo en: {model_path}")
+    
+    # Ahora llamamos a la función de carga con la ruta correcta y portable
     load_inference_model(model_path)
 
     original_settings = world.get_settings()
@@ -313,3 +333,7 @@ def main(lidar_range, channels, points_per_second):
         actor_list.clear()
         pygame.quit()
         print("Limpieza completa.")
+
+if __name__ == '__main__':
+    # Valores por defecto para el LiDAR, puedes cambiarlos si lo necesitas
+    main(lidar_range=100, channels=64, points_per_second=1200000)

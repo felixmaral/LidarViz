@@ -22,7 +22,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.append(current_dir)
 
-## INFERENCE: Importaciones necesarias para PyTorch y el modelo
+## Importaciones necesarias para cargar la arquitectura del modelo eltrenado
 import torch
 from pointnet2_model import PointNet2SemSeg
 
@@ -41,15 +41,12 @@ camera_views = [
 ]
 current_view_index = 0
 
-## INFERENCE: Variables globales para el modelo y la inferencia
+## Variables globales para el modelo y la inferencia
 inference_mode = False
 inference_model = None
 device = None
 NUM_POINTS_FOR_INFERENCE = 8192 # Número de puntos que espera tu modelo
-# Define los colores para cada clase. (Ej: 0=Fondo, 1=Vehículo, 2=Peatón)
-# Puedes personalizarlos. Formato [R, G, B] normalizado.
-# ESTA ES LA VERSIÓN CORRECTA CON 9 COLORES
-CLASS_COLORS = np.array([
+CLASS_COLORS = np.array([ # Mapa de color para las 9 etiquetas de segmentación
     [0.5, 0.5, 0.5],    # Clase 0 (Gris)
     [1.0, 0.0, 0.0],    # Clase 1 (Rojo)
     [0.0, 0.0, 1.0],    # Clase 2 (Azul)
@@ -63,7 +60,7 @@ CLASS_COLORS = np.array([
 
 # --- Funciones de Inferencia ---
 
-## INFERENCE: Carga el modelo PointNet++
+## Carga el modelo PointNet++
 def load_inference_model(model_path, num_classes=9):
     global inference_model, device
     print("Cargando modelo de inferencia...")
@@ -80,12 +77,12 @@ def load_inference_model(model_path, num_classes=9):
         print(f"Error al cargar el modelo: {e}")
         inference_model = None
 
-## INFERENCE: Ejecuta la inferencia en una nube de puntos
+## Ejecuta la inferencia en una nube de puntos
 def run_inference(points_np):
     if inference_model is None:
         return None, None
 
-    # 1. Preprocesar los puntos: Muestrear/ajustar al tamaño de entrada del modelo
+    #  Preprocesar los puntos: Submuestrear al tamaño de entrada del modelo
     num_points = points_np.shape[0]
     if num_points > NUM_POINTS_FOR_INFERENCE:
         # Muestreo aleatorio si hay más puntos de los necesarios
@@ -96,12 +93,12 @@ def run_inference(points_np):
     
     sampled_points = points_np[indices, :]
 
-    # 2. Convertir a Tensor de PyTorch y ajustar dimensiones
+    #  Convertir a tensor y ajustar dimensiones
     points_tensor = torch.from_numpy(sampled_points).float().to(device)
     points_tensor = points_tensor.unsqueeze(0)  # Añadir dimensión de batch -> (1, N, 3)
     points_tensor = points_tensor.transpose(2, 1) # Cambiar a (1, 3, N)
 
-    # 3. Realizar la inferencia
+    #  Inferencia
     with torch.no_grad():
         output = inference_model(points_tensor)
     
@@ -229,7 +226,7 @@ def main(lidar_range, channels, points_per_second):
     client.set_timeout(10.0)
     world = client.get_world()
     
-    ## INFERENCE: Cargar el modelo al inicio
+    ## Cargar el modelo
     # Asegúrate de que esta ruta sea correcta dentro de tu contenedor Docker si es necesario
     model_path = "/home/carla/2024-tfg-felix-martinez/segmentation/deep_learning/results/pointnet++_no_rem_v0/pointnet2_no_remission_v1.pth"
     load_inference_model(model_path)

@@ -1,25 +1,11 @@
-# Lidar-Visualizer
+# LidarViz
 
 This project provides a LiDAR Visualization tool for `.ply`, `.bin` files and data `samples` from __Carla Simulator__.
 
-## Download Only the `Lidar-Visualizer` Folder
-
-If you only need to download the `Lidar-Visualizer` folder without cloning the entire repository, follow these steps:
-
-**On Ubuntu/Debian**:
-     ```bash
-     sudo apt-get install svn
-     ```
-
-**On macOS**:
-     ```bash
-     brew install svn
-     ```
-
-### Run the following command to download only the `Lidar-Visualizer` folder:
+## Clone the repository
 
    ```bash
-   svn export https://github.com/RoboticsLabURJC/2024-tfg-felix-martinez/trunk/Lidar-Visualizer
+   git clone https://github.com/felixmaral/LidarViz.git
    ```
 
 ## Installation Instructions
@@ -27,7 +13,7 @@ If you only need to download the `Lidar-Visualizer` folder without cloning the e
 ### Navigate to the Project Directory
 
 ```bash
-cd path/Lidar-Visualizer
+cd LidarViz
 ```
 
 ### Install the Package
